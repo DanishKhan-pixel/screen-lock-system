@@ -28,6 +28,15 @@ class Command(BaseCommand):
     help = "Load demo people and incident reports."
 
     def handle(self, *args, **options):
+        alice = User.objects.filter(username="alice").first()
+        if alice and not alice.first_name:
+            alice.first_name = "Alice"
+            alice.email = alice.email or "alice@aegis.local"
+            alice.save()
+            alice.profile.job_title = alice.profile.job_title or "Operator"
+            alice.profile.department = alice.profile.department or "Protect"
+            alice.profile.save(update_fields=["job_title", "department"])
+
         for username, first, last, title, department in PEOPLE:
             user, _ = User.objects.get_or_create(
                 username=username,

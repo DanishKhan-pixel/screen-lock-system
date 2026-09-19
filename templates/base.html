@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
 <body>
-{% if user.is_authenticated and not screen_locked %}
+{% block body %}
 <div class="app">
     <aside class="sidebar">
         <a class="brand" href="{% url 'pages:dashboard' %}">
@@ -50,17 +50,6 @@
         </main>
     </div>
 </div>
-{% else %}
-    {% block guest %}
-    <main>
-        {% if messages %}
-            <ul class="messages page">
-                {% for message in messages %}<li>{{ message }}</li>{% endfor %}
-            </ul>
-        {% endif %}
-        {% block content %}{% endblock %}
-    </main>
-    {% endblock %}
-{% endif %}
+{% endblock %}
 </body>
 </html>
