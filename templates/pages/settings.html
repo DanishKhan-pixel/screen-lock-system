@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block crumb %}Security / <strong>Screen lock</strong>{% endblock %}
+{% block content %}
+<div class="hero">
+    <div>
+        <h1>Settings</h1>
+        <p>Configure your 6-digit screen lock PIN. The PIN is stored as a secure hash.</p>
+    </div>
+</div>
+
+<section class="grid two">
+    <article class="card">
+        <h2>Unlock PIN</h2>
+        <p class="muted">Status: {% if pin_configured %}configured{% else %}not set{% endif %}</p>
+        <form method="post" action="{% url 'pages:settings' %}" autocomplete="off">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {{ form.as_p }}
+            <button type="submit">Save PIN</button>
+        </form>
+    </article>
+    <article class="card">
+        <h2>How lock works</h2>
+        <p>Lock keeps you signed in and blocks every workspace page until the PIN is entered.</p>
+        <p class="muted">Three incorrect PINs end the session and return you to sign in. The server, not the browser, decides if the workspace is locked.</p>
+    </article>
+</section>
+{% endblock %}

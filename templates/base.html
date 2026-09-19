@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Aegis{% endblock %} · Aegis</title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+{% if user.is_authenticated and not screen_locked %}
+<div class="app">
+    <aside class="sidebar">
+        <a class="brand" href="{% url 'pages:dashboard' %}">
+            <span class="mark">A</span>
+            <span>Aegis<small>Secure workspace</small></span>
+        </a>
+        <nav class="nav-list">
+            <a href="{% url 'pages:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}is-active{% endif %}">Overview</a>
+            <a href="{% url 'pages:reports' %}" class="{% if request.resolver_match.url_name == 'reports' %}is-active{% endif %}">Incidents</a>
+            <a href="{% url 'pages:users' %}" class="{% if request.resolver_match.url_name == 'users' %}is-active{% endif %}">Directory</a>
+            <a href="{% url 'pages:profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}is-active{% endif %}">Profile</a>
+            <a href="{% url 'pages:settings' %}" class="{% if request.resolver_match.url_name == 'settings' %}is-active{% endif %}">Security</a>
+        </nav>
+        <p class="side-note">Lock the workspace from any page. Your sign-in stays active until you unlock or fail the PIN three times.</p>
+    </aside>
+    <div class="workspace">
+        <header class="topbar">
+            <div class="crumb">{% block crumb %}Workspace{% endblock %}</div>
+            <div class="top-actions">
+                <span class="who">{{ user.get_full_name|default:user.username }}</span>
+                <form class="inline" method="post" action="{% url 'accounts:activate_lock' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button class="btn-lock" type="submit">Lock workspace</button>
+                </form>
+                <form class="inline" method="post" action="{% url 'accounts:logout' %}">
+                    {% csrf_token %}
+                    <button class="btn-secondary" type="submit">Sign out</button>
+                </form>
+            </div>
+        </header>
+        <main class="page">
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+                </ul>
+            {% endif %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% else %}
+    {% block guest %}
+    <main>
+        {% if messages %}
+            <ul class="messages page">
+                {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+    {% endblock %}
+{% endif %}
+</body>
+</html>

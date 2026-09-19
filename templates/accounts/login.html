@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block guest %}
+<div class="auth-shell">
+    <section class="auth-card">
+        <div class="brand" style="margin-bottom:1rem">
+            <span class="mark">A</span>
+            <span>Aegis<small>Secure workspace</small></span>
+        </div>
+        <h1>Sign in</h1>
+        <p class="muted">Use your application credentials to continue.</p>
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+        <form method="post" action="{% url 'accounts:login' %}">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {{ form.as_p }}
+            {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+            <button type="submit">Sign in</button>
+        </form>
+    </section>
+</div>
+{% endblock %}

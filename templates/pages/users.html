@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block crumb %}Directory / <strong>People</strong>{% endblock %}
+{% block content %}
+<div class="hero">
+    <div>
+        <h1>Users</h1>
+        <p class="muted">Protected directory page used to verify lock enforcement.</p>
+    </div>
+    <form class="search" method="get">
+        <input type="search" name="q" value="{{ query }}" placeholder="Search people">
+        <button type="submit">Search</button>
+    </form>
+</div>
+
+<section class="people">
+    {% for person in people %}
+    <article class="card person">
+        <h3>{{ person.get_full_name|default:person.username }}</h3>
+        <p class="muted">@{{ person.username }}</p>
+        <p>{{ person.profile.job_title|default:"Team member" }} · {{ person.profile.department|default:"Aegis" }}</p>
+        <p>
+            <span class="pill {% if person.profile.pin_hash %}ok{% endif %}">
+                {% if person.profile.pin_hash %}Lock PIN set{% else %}No PIN{% endif %}
+            </span>
+        </p>
+    </article>
+    {% empty %}
+        <p class="empty">No people found.</p>
+    {% endfor %}
+</section>
+{% endblock %}

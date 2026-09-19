@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block crumb %}Incidents / <strong>Operations register</strong>{% endblock %}
+{% block content %}
+<div class="hero">
+    <div>
+        <h1>Reports</h1>
+        <p>Filter status: <strong>{{ status|default:"(none)" }}</strong> · Page: <strong>{{ page|default:"(none)" }}</strong></p>
+    </div>
+    <a class="btn-secondary" href="{% url 'pages:reports' %}?status=active&amp;page=3">Open filtered report</a>
+</div>
+
+<div class="toolbar">
+    <div class="filters">
+        <a href="{% url 'pages:reports' %}" class="{% if not status %}is-active{% endif %}">All</a>
+        {% for value, label in statuses %}
+            <a href="?status={{ value }}" class="{% if status == value %}is-active{% endif %}">{{ label }}</a>
+        {% endfor %}
+    </div>
+    <form class="search" method="get">
+        {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+        <input type="search" name="q" value="{{ query }}" placeholder="Search title or owner">
+        <button type="submit">Search</button>
+    </form>
+</div>
+
+<section class="card">
+    {% if page_obj.object_list %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Incident</th>
+                    <th>Summary</th>
+                    <th>Owner</th>
+                    <th>Status</th>
+                    <th>Severity</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in page_obj %}
+                <tr>
+                    <td>{{ report.title }}</td>
+                    <td class="muted">{{ report.summary }}</td>
+                    <td>{{ report.owner }}</td>
+                    <td><span class="pill {{ report.status }}">{{ report.get_status_display }}</span></td>
+                    <td><span class="pill {{ report.severity }}">{{ report.get_severity_display }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="pager">
+        {% if page_obj.has_previous %}
+            <a class="btn-secondary" href="?status={{ status }}&amp;q={{ query }}&amp;page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+        <span class="muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a class="btn-secondary" href="?status={{ status }}&amp;q={{ query }}&amp;page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </div>
+    {% else %}
+        <p class="empty">No incidents match this filter.</p>
+    {% endif %}
+</section>
+{% endblock %}

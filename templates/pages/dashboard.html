@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block crumb %}Overview / <strong>Command center</strong>{% endblock %}
+{% block content %}
+<div class="hero">
+    <div>
+        <h1>Welcome back, {{ user.first_name|default:user.username }}.</h1>
+        <p>This is a protected application page. Incident volume, directory health, and screen-lock posture for the current workspace.</p>
+    </div>
+</div>
+
+<section class="grid stats">
+    <article class="card">
+        <div class="stat-label">Open incidents</div>
+        <p class="stat-value">{{ active_reports }}</p>
+        <p class="muted">{{ report_total }} total in the register</p>
+    </article>
+    <article class="card">
+        <div class="stat-label">In review</div>
+        <p class="stat-value">{{ review_reports }}</p>
+        <p class="muted">Awaiting owner sign-off</p>
+    </article>
+    <article class="card">
+        <div class="stat-label">People</div>
+        <p class="stat-value">{{ user_count }}</p>
+        <p class="muted">Active directory accounts</p>
+    </article>
+    <article class="card">
+        <div class="stat-label">Screen lock</div>
+        <p class="stat-value">{% if pin_configured %}On{% else %}Off{% endif %}</p>
+        <p class="muted">{% if pin_configured %}PIN is configured for this account{% else %}Set a PIN in Security{% endif %}</p>
+    </article>
+</section>
+
+<section class="grid split" style="margin-top:1rem">
+    <article class="card">
+        <h2>Latest incidents</h2>
+        {% if recent_reports %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th>Incident</th><th>Owner</th><th>Status</th><th>Severity</th></tr>
+                </thead>
+                <tbody>
+                    {% for report in recent_reports %}
+                    <tr>
+                        <td>{{ report.title }}</td>
+                        <td>{{ report.owner }}</td>
+                        <td><span class="pill {{ report.status }}">{{ report.get_status_display }}</span></td>
+                        <td><span class="pill {{ report.severity }}">{{ report.get_severity_display }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="empty">No incidents yet. Run <code>python manage.py seed_demo</code> to load the sample register.</p>
+        {% endif %}
+    </article>
+    <article class="card">
+        <h2>Session</h2>
+        <p>Signed in as <strong>{{ user.username }}</strong></p>
+        <p class="muted">Last login: {{ user.last_login|date:"M j, Y H:i"|default:"just now" }}</p>
+        <p class="muted">Use Lock in the header to temporarily block the application without signing out.</p>
+        <p><a href="{% url 'pages:reports' %}?status=active&amp;page=3">Review active incidents</a></p>
+    </article>
+</section>
+{% endblock %}

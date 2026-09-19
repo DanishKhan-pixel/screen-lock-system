@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Application locked{% endblock %}
+{% block guest %}
+<div class="lock-shell">
+    <div class="lock-bar">
+        <span>Aegis</span>
+        <span>Session locked</span>
+        <form class="inline" method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button class="btn-secondary" type="submit">Log out</button>
+        </form>
+    </div>
+    <section class="card lock-card">
+        <h1>Application locked</h1>
+        <p class="lock-meta">Enter your 6-digit PIN to continue. Your session stays signed in.</p>
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+        <form method="post" action="{% url 'accounts:lock_screen' %}" autocomplete="off">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <label for="{{ form.pin.id_for_label }}">{{ form.pin.label }}</label>
+            {{ form.pin }}
+            {{ form.pin.errors }}
+            <p><button type="submit">Unlock</button></p>
+        </form>
+    </section>
+</div>
+{% endblock %}
