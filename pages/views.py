@@ -135,3 +135,12 @@ def api_status(request):
             "authenticated": request.user.is_authenticated,
         }
     )
+
+
+@login_required
+def api_reports(request):
+    """Return a JSON list of all incident reports (summary fields only)."""
+    qs = Report.objects.values(
+        "id", "title", "status", "severity", "owner", "created_at"
+    ).order_by("-created_at")
+    return JsonResponse({"reports": list(qs)}, json_dumps_params={"default": str})

@@ -14,4 +14,5 @@ urlpatterns = [
     path("profile/update/", views.update_profile, name="update_profile"),
     path("settings/", views.settings_page, name="settings"),
     path("api/status/", views.api_status, name="api_status"),
+    path("api/reports/", views.api_reports, name="api_reports"),
 ]
