@@ -3,8 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
-from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.http import Http404, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from accounts.forms import SetPinForm
@@ -64,6 +64,13 @@ def reports(request):
             "statuses": Report.STATUS_CHOICES,
         },
     )
+
+
+@login_required
+def report_detail(request, pk):
+    """Display details for a single incident report."""
+    report = get_object_or_404(Report, pk=pk)
+    return render(request, "pages/report_detail.html", {"report": report})
 
 
 @login_required
@@ -128,3 +135,12 @@ def api_status(request):
             "authenticated": request.user.is_authenticated,
         }
     )
+
+
+@login_required
+def api_reports(request):
+    """Return a JSON list of all incident reports (summary fields only)."""
+    qs = Report.objects.values(
+        "id", "title", "status", "severity", "owner", "created_at"
+    ).order_by("-created_at")
+    return JsonResponse({"reports": list(qs)}, json_dumps_params={"default": str})

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ report.title }}{% endblock %}
+{% block crumb %}Incidents › {{ report.title }}{% endblock %}
+
+{% block content %}
+<div class="detail-card">
+    <div class="detail-header">
+        <h1>{{ report.title }}</h1>
+        <span class="badge badge-{{ report.status }}">{{ report.get_status_display }}</span>
+        <span class="badge badge-severity-{{ report.severity }}">{{ report.get_severity_display }}</span>
+    </div>
+
+    <dl class="detail-meta">
+        <dt>Owner</dt>
+        <dd>{{ report.owner }}</dd>
+
+        <dt>Created</dt>
+        <dd>{{ report.created_at|date:"N j, Y, P" }}</dd>
+
+        <dt>Last updated</dt>
+        <dd>{{ report.updated_at|date:"N j, Y, P" }}</dd>
+
+        {% if report.summary %}
+        <dt>Summary</dt>
+        <dd>{{ report.summary }}</dd>
+        {% endif %}
+    </dl>
+
+    <a class="btn-secondary" href="{% url 'pages:reports' %}">← Back to Incidents</a>
+</div>
+{% endblock %}

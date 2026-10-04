@@ -413,3 +413,59 @@ class CsrfTests(ScreenLockTestCase):
         session.save()
         response = csrf_client.post(reverse("accounts:lock_screen"), {"pin": self.PIN})
         self.assertEqual(response.status_code, 403)
+
+
+class LockTimestampTests(ScreenLockTestCase):
+    """Tests verifying that a UTC timestamp is stored on lock and cleared on unlock."""
+
+    def test_lock_stores_timestamp(self):
+        self.lock()
+        ts = self.client.session.get("screen_lock_timestamp")
+        self.assertIsNotNone(ts, "Expected a timestamp to be stored in the session on lock.")
+
+    def test_unlock_clears_timestamp(self):
+        self.lock()
+        self.unlock(self.PIN)
+        ts = self.client.session.get("screen_lock_timestamp")
+        self.assertIsNone(ts, "Expected the timestamp to be cleared after unlock.")
+
+    def test_timestamp_is_iso_format(self):
+        import datetime
+        self.lock()
+        ts = self.client.session.get("screen_lock_timestamp")
+        try:
+            dt = datetime.datetime.fromisoformat(ts)
+        except (TypeError, ValueError):
+            self.fail(f"Timestamp {ts!r} is not a valid ISO-8601 string.")
+        self.assertIsNotNone(dt.tzinfo, "Timestamp should be timezone-aware.")
+
+
+class UserProfilePropertyTests(ScreenLockTestCase):
+    """Tests for avatar_initials and pin_configured model properties."""
+
+    def test_pin_configured_true_when_pin_set(self):
+        self.assertTrue(self.user.profile.pin_configured)
+
+    def test_pin_configured_false_when_no_pin(self):
+        profile = self.user.profile
+        profile.pin_hash = ""
+        profile.save()
+        self.assertFalse(profile.pin_configured)
+
+    def test_avatar_initials_from_full_name(self):
+        self.user.first_name = "Jane"
+        self.user.last_name = "Doe"
+        self.user.save()
+        self.assertEqual(self.user.profile.avatar_initials, "JD")
+
+    def test_avatar_initials_fallback_to_username(self):
+        self.user.first_name = ""
+        self.user.last_name = ""
+        self.user.save()
+        self.assertEqual(self.user.profile.avatar_initials, "AL")
+
+    def test_avatar_initials_max_two_chars(self):
+        self.user.first_name = "Alice"
+        self.user.last_name = "Bob"
+        self.user.save()
+        self.assertLessEqual(len(self.user.profile.avatar_initials), 2)

@@ -1,8 +1,37 @@
+# Python
 .venv/
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
 *.egg-info/
-.DS_Store
+*.egg
+dist/
+build/
+.eggs/
+
+# Django
+*.sqlite3
 media/
 staticfiles/
+local_settings.py
+
+# Environment
 .env
+.env.*
+!.env.example
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing / Coverage
+.coverage
+htmlcov/
+.pytest_cache/
