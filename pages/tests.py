@@ -67,3 +67,69 @@ class WorkspaceTests(TestCase):
         self.user.profile.refresh_from_db()
         self.assertEqual(self.user.first_name, "Alicia")
         self.assertEqual(self.user.profile.job_title, "Lead Operator")
+
+
+class ReportDetailTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="bob", password="pass1234")
+        self.report = Report.objects.create(
+            title="Critical auth bypass",
+            status=Report.STATUS_ACTIVE,
+            severity="critical",
+            owner="Bob",
+            summary="JWT secret exposed in logs.",
+        )
+        self.client.login(username="bob", password="pass1234")
+
+    def test_report_detail_returns_200(self):
+        url = reverse("pages:report_detail", args=[self.report.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_report_detail_shows_title(self):
+        url = reverse("pages:report_detail", args=[self.report.pk])
+        response = self.client.get(url)
+        self.assertContains(response, "Critical auth bypass")
+
+    def test_report_detail_404_for_missing_report(self):
+        url = reverse("pages:report_detail", args=[99999])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_report_detail_requires_login(self):
+        self.client.logout()
+        url = reverse("pages:report_detail", args=[self.report.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+
+
+class ApiReportsTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="carol", password="pass1234")
+        Report.objects.create(
+            title="Report A", status=Report.STATUS_ACTIVE, severity="low", owner="Carol"
+        )
+        Report.objects.create(
+            title="Report B", status=Report.STATUS_CLOSED, severity="high", owner="Dave"
+        )
+        self.client.login(username="carol", password="pass1234")
+
+    def test_api_reports_returns_200(self):
+        response = self.client.get(reverse("pages:api_reports"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_api_reports_content_type_is_json(self):
+        response = self.client.get(reverse("pages:api_reports"))
+        self.assertEqual(response["Content-Type"], "application/json")
+
+    def test_api_reports_returns_all_reports(self):
+        import json
+        response = self.client.get(reverse("pages:api_reports"))
+        data = json.loads(response.content)
+        self.assertIn("reports", data)
+        self.assertEqual(len(data["reports"]), 2)
+
+    def test_api_reports_requires_login(self):
+        self.client.logout()
+        response = self.client.get(reverse("pages:api_reports"))
+        self.assertEqual(response.status_code, 302)
