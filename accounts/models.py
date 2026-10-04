@@ -21,5 +21,20 @@ class UserProfile(models.Model):
             return False
         return check_password(raw_pin, self.pin_hash)
 
+    @property
+    def pin_configured(self):
+        """Returns True if the user has set a screen lock PIN."""
+        return bool(self.pin_hash)
+
+    @property
+    def avatar_initials(self):
+        """Returns up to two uppercase initials derived from the user's name."""
+        user = self.user
+        parts = [user.first_name, user.last_name]
+        initials = "".join(p[0] for p in parts if p)
+        if not initials:
+            initials = user.username[:2]
+        return initials.upper()[:2]
+
     def __str__(self):
         return f"Profile for {self.user}"
