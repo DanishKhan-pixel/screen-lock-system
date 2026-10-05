@@ -23,6 +23,10 @@ class Report(models.Model):
     severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES, default="medium")
     owner = models.CharField(max_length=80)
     summary = models.CharField(max_length=240, blank=True)
+    note = models.TextField(
+        blank=True,
+        help_text="Detailed investigation notes. Supports plain text.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -33,4 +37,4 @@ class Report(models.Model):
         return self.title
 
     def get_absolute_url(self):
-        return reverse("pages:reports") + f"?q={self.title}"
+        return reverse("pages:report_detail", args=[self.pk])
