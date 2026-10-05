@@ -102,7 +102,8 @@ def update_profile(request):
         profile = request.user.profile
         profile.job_title = form.cleaned_data.get("job_title", "")
         profile.department = form.cleaned_data.get("department", "")
-        profile.save(update_fields=["job_title", "department"])
+        profile.phone = form.cleaned_data.get("phone", "")
+        profile.save(update_fields=["job_title", "department", "phone"])
         messages.success(request, "Profile updated.")
         return redirect("pages:profile")
     return render(request, "pages/profile.html", {"form": form})

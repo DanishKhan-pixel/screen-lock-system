@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 class ProfileForm(forms.ModelForm):
     job_title = forms.CharField(required=False, max_length=80)
     department = forms.CharField(required=False, max_length=80)
+    phone = forms.CharField(required=False, max_length=30, label="Phone")
 
     class Meta:
         model = User
@@ -20,6 +21,8 @@ class ProfileForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["job_title"].widget.attrs["class"] = "input"
         self.fields["department"].widget.attrs["class"] = "input"
+        self.fields["phone"].widget.attrs["class"] = "input"
         if profile and not self.is_bound:
             self.fields["job_title"].initial = profile.job_title
             self.fields["department"].initial = profile.department
+            self.fields["phone"].initial = profile.phone
