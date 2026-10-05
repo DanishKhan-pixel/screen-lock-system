@@ -12,6 +12,7 @@ class UserProfile(models.Model):
     pin_hash = models.CharField(max_length=128, blank=True, default="")
     job_title = models.CharField(max_length=80, blank=True)
     department = models.CharField(max_length=80, blank=True)
+    phone = models.CharField(max_length=30, blank=True, help_text="Optional contact number.")
 
     def set_pin(self, raw_pin):
         self.pin_hash = make_password(raw_pin)
