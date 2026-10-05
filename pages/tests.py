@@ -133,3 +133,82 @@ class ApiReportsTests(TestCase):
         self.client.logout()
         response = self.client.get(reverse("pages:api_reports"))
         self.assertEqual(response.status_code, 302)
+
+
+class ApiMeTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="eve",
+            password="pass1234",
+            first_name="Eve",
+            last_name="Smith",
+            email="eve@aegis.local",
+        )
+        self.user.profile.job_title = "Analyst"
+        self.user.profile.department = "SOC"
+        self.user.profile.phone = "+92-300-1234567"
+        self.user.profile.save()
+        self.client.login(username="eve", password="pass1234")
+
+    def test_api_me_returns_200(self):
+        response = self.client.get(reverse("pages:api_me"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_api_me_contains_username(self):
+        import json
+        response = self.client.get(reverse("pages:api_me"))
+        data = json.loads(response.content)
+        self.assertEqual(data["username"], "eve")
+
+    def test_api_me_contains_profile_fields(self):
+        import json
+        response = self.client.get(reverse("pages:api_me"))
+        data = json.loads(response.content)
+        self.assertEqual(data["job_title"], "Analyst")
+        self.assertEqual(data["department"], "SOC")
+        self.assertEqual(data["phone"], "+92-300-1234567")
+
+    def test_api_me_avatar_initials(self):
+        import json
+        response = self.client.get(reverse("pages:api_me"))
+        data = json.loads(response.content)
+        self.assertEqual(data["avatar_initials"], "ES")
+
+    def test_api_me_requires_login(self):
+        self.client.logout()
+        response = self.client.get(reverse("pages:api_me"))
+        self.assertEqual(response.status_code, 302)
+
+
+class AegisTagsTests(TestCase):
+    def test_severity_icon_critical(self):
+        from pages.templatetags.aegis_tags import severity_icon
+        self.assertEqual(severity_icon("critical"), "🔴")
+
+    def test_severity_icon_low(self):
+        from pages.templatetags.aegis_tags import severity_icon
+        self.assertEqual(severity_icon("low"), "🔵")
+
+    def test_severity_icon_unknown(self):
+        from pages.templatetags.aegis_tags import severity_icon
+        self.assertEqual(severity_icon("unknown"), "⚪")
+
+    def test_status_label_active(self):
+        from pages.templatetags.aegis_tags import status_label
+        self.assertIn("Active", status_label("active"))
+
+    def test_status_label_closed(self):
+        from pages.templatetags.aegis_tags import status_label
+        self.assertIn("Closed", status_label("closed"))
+
+    def test_initials_filter_with_profile(self):
+        from pages.templatetags.aegis_tags import initials
+        user = User.objects.create_user(
+            username="frank", first_name="Frank", last_name="Green"
+        )
+        self.assertEqual(initials(user), "FG")
+
+    def test_initials_filter_fallback(self):
+        from pages.templatetags.aegis_tags import initials
+        user = User.objects.create_user(username="xy", first_name="", last_name="")
+        self.assertEqual(initials(user), "XY")
