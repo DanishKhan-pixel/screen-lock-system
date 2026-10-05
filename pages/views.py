@@ -145,3 +145,23 @@ def api_reports(request):
         "id", "title", "status", "severity", "owner", "created_at"
     ).order_by("-created_at")
     return JsonResponse({"reports": list(qs)}, json_dumps_params={"default": str})
+
+
+@login_required
+def api_me(request):
+    """Return JSON profile data for the currently authenticated user."""
+    user = request.user
+    profile = getattr(user, "profile", None)
+    return JsonResponse(
+        {
+            "id": user.pk,
+            "username": user.username,
+            "full_name": user.get_full_name(),
+            "email": user.email,
+            "job_title": profile.job_title if profile else "",
+            "department": profile.department if profile else "",
+            "phone": profile.phone if profile else "",
+            "pin_configured": profile.pin_configured if profile else False,
+            "avatar_initials": profile.avatar_initials if profile else "",
+        }
+    )
