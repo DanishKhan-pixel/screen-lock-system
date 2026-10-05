@@ -111,6 +111,10 @@ LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "pages:dashboard"
 LOGOUT_REDIRECT_URL = "accounts:login"
 
+# Screen lock: maximum consecutive incorrect PIN attempts before forced logout.
+# Override via the SCREEN_LOCK_MAX_ATTEMPTS environment variable.
+SCREEN_LOCK_MAX_ATTEMPTS = int(os.environ.get("SCREEN_LOCK_MAX_ATTEMPTS", "3"))
+
 MAILERS = {
     "default": {
         "BACKEND": "django.core.mail.backends.console.EmailBackend",

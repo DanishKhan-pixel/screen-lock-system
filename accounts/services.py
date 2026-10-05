@@ -1,5 +1,6 @@
 import datetime
 
+from django.conf import settings
 from django.contrib.auth import logout
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -8,7 +9,9 @@ SESSION_LOCKED = "screen_lock_locked"
 SESSION_RETURN_URL = "screen_lock_return_url"
 SESSION_FAILED_ATTEMPTS = "screen_lock_failed_attempts"
 SESSION_LOCK_TIMESTAMP = "screen_lock_timestamp"
-MAX_FAILED_ATTEMPTS = 3
+
+# Honour the settings override; fall back to 3 if the key is absent.
+MAX_FAILED_ATTEMPTS = getattr(settings, "SCREEN_LOCK_MAX_ATTEMPTS", 3)
 
 INCORRECT_PIN_MESSAGE = "The PIN you entered is incorrect."
 
