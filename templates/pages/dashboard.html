@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load aegis_tags %}
 {% block title %}Dashboard{% endblock %}
 {% block crumb %}Overview / <strong>Command center</strong>{% endblock %}
 {% block content %}
@@ -44,10 +45,10 @@
                 <tbody>
                     {% for report in recent_reports %}
                     <tr>
-                        <td>{{ report.title }}</td>
+                        <td><a href="{{ report.get_absolute_url }}">{{ report.title }}</a></td>
                         <td>{{ report.owner }}</td>
                         <td><span class="pill {{ report.status }}">{{ report.get_status_display }}</span></td>
-                        <td><span class="pill {{ report.severity }}">{{ report.get_severity_display }}</span></td>
+                        <td>{{ report.severity|severity_icon }} <span class="pill {{ report.severity }}">{{ report.get_severity_display }}</span></td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -62,7 +63,7 @@
         <p>Signed in as <strong>{{ user.username }}</strong></p>
         <p class="muted">Last login: {{ user.last_login|date:"M j, Y H:i"|default:"just now" }}</p>
         <p class="muted">Use Lock in the header to temporarily block the application without signing out.</p>
-        <p><a href="{% url 'pages:reports' %}?status=active&amp;page=3">Review active incidents</a></p>
+        <p><a href="{% url 'pages:reports' %}?status=active">Review active incidents</a></p>
     </article>
 </section>
 {% endblock %}
