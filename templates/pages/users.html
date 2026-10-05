@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load aegis_tags %}
 {% block title %}Users{% endblock %}
 {% block crumb %}Directory / <strong>People</strong>{% endblock %}
 {% block content %}
@@ -16,12 +17,16 @@
 <section class="people">
     {% for person in people %}
     <article class="card person">
+        <div class="avatar-circle">{{ person|initials }}</div>
         <h3>{{ person.get_full_name|default:person.username }}</h3>
         <p class="muted">@{{ person.username }}</p>
         <p>{{ person.profile.job_title|default:"Team member" }} · {{ person.profile.department|default:"Aegis" }}</p>
+        {% if person.profile.phone %}
+        <p class="muted">📞 {{ person.profile.phone }}</p>
+        {% endif %}
         <p>
-            <span class="pill {% if person.profile.pin_hash %}ok{% endif %}">
-                {% if person.profile.pin_hash %}Lock PIN set{% else %}No PIN{% endif %}
+            <span class="pill {% if person.profile.pin_configured %}ok{% endif %}">
+                {% if person.profile.pin_configured %}Lock PIN set{% else %}No PIN{% endif %}
             </span>
         </p>
     </article>
