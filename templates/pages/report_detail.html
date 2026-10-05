@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load aegis_tags %}
 {% block title %}{{ report.title }}{% endblock %}
 {% block crumb %}Incidents › {{ report.title }}{% endblock %}
 
@@ -6,7 +7,8 @@
 <div class="detail-card">
     <div class="detail-header">
         <h1>{{ report.title }}</h1>
-        <span class="badge badge-{{ report.status }}">{{ report.get_status_display }}</span>
+        <span class="badge badge-{{ report.status }}">{{ report.status|status_label }}</span>
+        {{ report.severity|severity_icon }}
         <span class="badge badge-severity-{{ report.severity }}">{{ report.get_severity_display }}</span>
     </div>
 
@@ -23,6 +25,11 @@
         {% if report.summary %}
         <dt>Summary</dt>
         <dd>{{ report.summary }}</dd>
+        {% endif %}
+
+        {% if report.note %}
+        <dt>Investigation notes</dt>
+        <dd class="note-body">{{ report.note|linebreaksbr }}</dd>
         {% endif %}
     </dl>
 
