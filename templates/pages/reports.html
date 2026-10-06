@@ -18,8 +18,15 @@
             <a href="?status={{ value }}" class="{% if status == value %}is-active{% endif %}">{{ label }}</a>
         {% endfor %}
     </div>
+    <div class="filters">
+        <a href="{% url 'pages:reports' %}{% if status %}?status={{ status }}{% endif %}" class="{% if not severity %}is-active{% endif %}">Any severity</a>
+        {% for value, label in severities %}
+            <a href="?{% if status %}status={{ status }}&amp;{% endif %}severity={{ value }}" class="{% if severity == value %}is-active{% endif %}">{{ label }}</a>
+        {% endfor %}
+    </div>
     <form class="search" method="get">
         {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+        {% if severity %}<input type="hidden" name="severity" value="{{ severity }}">{% endif %}
         <input type="search" name="q" value="{{ query }}" placeholder="Search title or owner">
         <button type="submit">Search</button>
     </form>
