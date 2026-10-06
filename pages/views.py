@@ -35,6 +35,7 @@ def dashboard(request):
             "report_total": reports.count(),
             "active_reports": status_counts.get(Report.STATUS_ACTIVE, 0),
             "review_reports": status_counts.get(Report.STATUS_REVIEW, 0),
+            "closed_reports": status_counts.get(Report.STATUS_CLOSED, 0),
             "recent_reports": reports[:5],
         },
     )
