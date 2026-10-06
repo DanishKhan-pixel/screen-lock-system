@@ -17,6 +17,10 @@ class UserProfile(models.Model):
     def set_pin(self, raw_pin):
         self.pin_hash = make_password(raw_pin)
 
+    def clear_pin(self):
+        """Remove the stored PIN, effectively disabling the screen lock."""
+        self.pin_hash = ""
+
     def check_pin(self, raw_pin):
         if not self.pin_hash:
             return False
