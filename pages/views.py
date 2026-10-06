@@ -44,12 +44,15 @@ def dashboard(request):
 @login_required
 def reports(request):
     status = request.GET.get("status", "")
+    severity = request.GET.get("severity", "")
     query = request.GET.get("q", "").strip()
     page_number = request.GET.get("page") or 1
 
     qs = Report.objects.all()
     if status in dict(Report.STATUS_CHOICES):
         qs = qs.filter(status=status)
+    if severity in dict(Report.SEVERITY_CHOICES):
+        qs = qs.filter(severity=severity)
     if query:
         qs = qs.filter(Q(title__icontains=query) | Q(owner__icontains=query))
 
@@ -59,10 +62,12 @@ def reports(request):
         "pages/reports.html",
         {
             "status": status,
+            "severity": severity,
             "page": page_number,
             "query": query,
             "page_obj": page_obj,
             "statuses": Report.STATUS_CHOICES,
+            "severities": Report.SEVERITY_CHOICES,
         },
     )
 
