@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from accounts.forms import PIN_FORMAT_ERROR, ScreenLockForm
@@ -501,3 +501,60 @@ class ClearPinViewTests(ScreenLockTestCase):
         profile.refresh_from_db()
         self.assertFalse(profile.pin_configured)
         self.assertEqual(profile.pin_hash, "")
+
+
+class AutoLockTimeoutTests(ScreenLockTestCase):
+    """Tests for inactivity timeout auto-locking behavior."""
+
+    def test_activity_recorded_on_request(self):
+        from accounts.services import SESSION_LAST_ACTIVITY
+        response = self.client.get(reverse("pages:dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(SESSION_LAST_ACTIVITY, self.client.session)
+
+    @override_settings(SCREEN_LOCK_TIMEOUT_SECONDS=300)
+    def test_auto_lock_triggers_after_timeout(self):
+        import datetime
+        from accounts.services import SESSION_LAST_ACTIVITY, SESSION_LOCKED
+
+        # Establish session activity in past (> 300 seconds ago)
+        past_time = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(seconds=400)
+        session = self.client.session
+        session[SESSION_LAST_ACTIVITY] = past_time.isoformat()
+        session.save()
+
+        # Next request should trigger auto-lock redirect
+        response = self.client.get(reverse("pages:dashboard"))
+        self.assertRedirects(response, reverse("accounts:lock_screen"))
+        self.assertTrue(self.client.session.get(SESSION_LOCKED))
+
+    @override_settings(SCREEN_LOCK_TIMEOUT_SECONDS=300)
+    def test_no_auto_lock_before_timeout(self):
+        import datetime
+        from accounts.services import SESSION_LAST_ACTIVITY, SESSION_LOCKED
+
+        recent_time = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(seconds=100)
+        session = self.client.session
+        session[SESSION_LAST_ACTIVITY] = recent_time.isoformat()
+        session.save()
+
+        response = self.client.get(reverse("pages:dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(self.client.session.get(SESSION_LOCKED, False))
+
+    @override_settings(SCREEN_LOCK_TIMEOUT_SECONDS=300)
+    def test_no_auto_lock_if_user_has_no_pin(self):
+        import datetime
+        from accounts.services import SESSION_LAST_ACTIVITY, SESSION_LOCKED
+
+        self.user.profile.clear_pin()
+        self.user.profile.save()
+
+        past_time = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(seconds=500)
+        session = self.client.session
+        session[SESSION_LAST_ACTIVITY] = past_time.isoformat()
+        session.save()
+
+        response = self.client.get(reverse("pages:dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(self.client.session.get(SESSION_LOCKED, False))
