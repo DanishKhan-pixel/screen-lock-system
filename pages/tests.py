@@ -258,3 +258,50 @@ class AegisTagsTests(TestCase):
         from pages.templatetags.aegis_tags import initials
         user = User.objects.create_user(username="xy", first_name="", last_name="")
         self.assertEqual(initials(user), "XY")
+
+
+class CreateReportTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="grace", password="pass1234")
+        self.client.login(username="grace", password="pass1234")
+
+    def test_create_report_requires_login(self):
+        self.client.logout()
+        response = self.client.get(reverse("pages:create_report"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("accounts:login"), response.url)
+
+    def test_create_report_get_renders_form(self):
+        response = self.client.get(reverse("pages:create_report"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "New Incident")
+        self.assertContains(response, 'name="title"')
+        self.assertContains(response, 'name="status"')
+        self.assertContains(response, 'name="severity"')
+
+    def test_create_report_post_valid_creates_and_redirects(self):
+        data = {
+            "title": "Unauthorized SSH attempt",
+            "status": Report.STATUS_ACTIVE,
+            "severity": "high",
+            "owner": "Grace",
+            "summary": "Brute-force detected on port 22",
+            "note": "IP blocked via fail2ban.",
+        }
+        response = self.client.post(reverse("pages:create_report"), data)
+        report = Report.objects.filter(title="Unauthorized SSH attempt").first()
+        self.assertIsNotNone(report)
+        self.assertEqual(report.owner, "Grace")
+        self.assertEqual(report.severity, "high")
+        self.assertRedirects(response, report.get_absolute_url())
+
+    def test_create_report_post_invalid_shows_errors(self):
+        data = {
+            "title": "",  # required
+            "status": Report.STATUS_ACTIVE,
+            "severity": "high",
+        }
+        response = self.client.post(reverse("pages:create_report"), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context["form"], "title", "This field is required.")
+        self.assertEqual(Report.objects.filter(status=Report.STATUS_ACTIVE).count(), 0)
