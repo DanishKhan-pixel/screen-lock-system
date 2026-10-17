@@ -135,6 +135,52 @@ class ApiReportsTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
 
+class ApiReportDetailTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="clara", password="pass1234")
+        self.report = Report.objects.create(
+            title="Firewall rule leakage",
+            status=Report.STATUS_ACTIVE,
+            severity="high",
+            owner="Clara",
+            summary="Unfiltered port 443 inbound",
+            note="Reviewed iptables and resolved rule conflict.",
+        )
+        self.client.login(username="clara", password="pass1234")
+
+    def test_api_report_detail_returns_200(self):
+        url = reverse("pages:api_report_detail", args=[self.report.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/json")
+
+    def test_api_report_detail_returns_correct_fields(self):
+        import json
+        url = reverse("pages:api_report_detail", args=[self.report.pk])
+        response = self.client.get(url)
+        data = json.loads(response.content)
+        self.assertEqual(data["id"], self.report.pk)
+        self.assertEqual(data["title"], "Firewall rule leakage")
+        self.assertEqual(data["status"], "active")
+        self.assertEqual(data["severity"], "high")
+        self.assertEqual(data["owner"], "Clara")
+        self.assertEqual(data["summary"], "Unfiltered port 443 inbound")
+        self.assertEqual(data["note"], "Reviewed iptables and resolved rule conflict.")
+        self.assertIsNotNone(data["created_at"])
+        self.assertIsNotNone(data["updated_at"])
+
+    def test_api_report_detail_404_for_missing(self):
+        url = reverse("pages:api_report_detail", args=[99999])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_api_report_detail_requires_login(self):
+        self.client.logout()
+        url = reverse("pages:api_report_detail", args=[self.report.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+
+
 class ApiMeTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
