@@ -8,6 +8,9 @@
         <h1>Welcome back, {{ user.first_name|default:user.username }}.</h1>
         <p>This is a protected application page. Incident volume, directory health, and screen-lock posture for the current workspace.</p>
     </div>
+    <div>
+        <a class="btn" href="{% url 'pages:create_report' %}">+ New Incident</a>
+    </div>
 </div>
 
 <section class="grid stats">

@@ -8,7 +8,10 @@
         <h1>Reports</h1>
         <p>Filter status: <strong>{{ status|default:"(none)" }}</strong> · Page: <strong>{{ page|default:"(none)" }}</strong></p>
     </div>
-    <a class="btn-secondary" href="{% url 'pages:reports' %}?status=active">View active incidents</a>
+    <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <a class="btn-secondary" href="{% url 'pages:reports' %}?status=active">View active</a>
+        <a class="btn" href="{% url 'pages:create_report' %}">+ New Incident</a>
+    </div>
 </div>
 
 <div class="toolbar">
