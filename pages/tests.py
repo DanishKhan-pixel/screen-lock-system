@@ -305,3 +305,61 @@ class CreateReportTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context["form"], "title", "This field is required.")
         self.assertEqual(Report.objects.filter(status=Report.STATUS_ACTIVE).count(), 0)
+
+
+class ReportFilterTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="henry", password="pass1234")
+        self.r_crit = Report.objects.create(
+            title="Database data dump",
+            status=Report.STATUS_ACTIVE,
+            severity="critical",
+            owner="Henry",
+        )
+        self.r_med = Report.objects.create(
+            title="TLS cert expiration warning",
+            status=Report.STATUS_REVIEW,
+            severity="medium",
+            owner="Alice",
+        )
+        self.r_low = Report.objects.create(
+            title="Minor dependency bump",
+            status=Report.STATUS_CLOSED,
+            severity="low",
+            owner="Bob",
+        )
+        self.client.login(username="henry", password="pass1234")
+
+    def test_filter_by_status(self):
+        response = self.client.get(reverse("pages:reports"), {"status": "active"})
+        self.assertEqual(response.status_code, 200)
+        reports = list(response.context["page_obj"])
+        self.assertIn(self.r_crit, reports)
+        self.assertNotIn(self.r_med, reports)
+        self.assertNotIn(self.r_low, reports)
+
+    def test_filter_by_severity(self):
+        response = self.client.get(reverse("pages:reports"), {"severity": "critical"})
+        self.assertEqual(response.status_code, 200)
+        reports = list(response.context["page_obj"])
+        self.assertIn(self.r_crit, reports)
+        self.assertNotIn(self.r_med, reports)
+
+    def test_filter_by_search_query(self):
+        response = self.client.get(reverse("pages:reports"), {"q": "expiration"})
+        self.assertEqual(response.status_code, 200)
+        reports = list(response.context["page_obj"])
+        self.assertIn(self.r_med, reports)
+        self.assertNotIn(self.r_crit, reports)
+
+    def test_filter_invalid_status_ignored(self):
+        response = self.client.get(reverse("pages:reports"), {"status": "invalid_status"})
+        self.assertEqual(response.status_code, 200)
+        reports = list(response.context["page_obj"])
+        self.assertEqual(len(reports), 3)
+
+    def test_filter_invalid_severity_ignored(self):
+        response = self.client.get(reverse("pages:reports"), {"severity": "invalid_severity"})
+        self.assertEqual(response.status_code, 200)
+        reports = list(response.context["page_obj"])
+        self.assertEqual(len(reports), 3)
