@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 
 from accounts.forms import SetPinForm
 
-from .forms import ProfileForm
+from .forms import ProfileForm, ReportForm
 from .models import Report
 
 
@@ -77,6 +77,20 @@ def report_detail(request, pk):
     """Display details for a single incident report."""
     report = get_object_or_404(Report, pk=pk)
     return render(request, "pages/report_detail.html", {"report": report})
+
+
+@login_required
+def create_report(request):
+    """Create a new incident report."""
+    if request.method == "POST":
+        form = ReportForm(request.POST)
+        if form.is_valid():
+            report = form.save()
+            messages.success(request, f"Incident '{report.title}' created.")
+            return redirect(report.get_absolute_url())
+    else:
+        form = ReportForm()
+    return render(request, "pages/create_report.html", {"form": form})
 
 
 @login_required
