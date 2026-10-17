@@ -19,6 +19,15 @@
             {{ form.as_p }}
             <button type="submit">Save PIN</button>
         </form>
+        {% if pin_configured %}
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color, #27272a);">
+            <form method="post" action="{% url 'accounts:clear_pin' %}" onsubmit="return confirm('Are you sure you want to remove your screen lock PIN?');">
+                {% csrf_token %}
+                <p class="muted" style="margin-bottom: 0.5rem;">Disable screen lock protection for this account:</p>
+                <button type="submit" class="btn-secondary" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">Remove PIN</button>
+            </form>
+        </div>
+        {% endif %}
     </article>
     <article class="card">
         <h2>How lock works</h2>
