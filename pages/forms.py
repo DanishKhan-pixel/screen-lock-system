@@ -26,3 +26,30 @@ class ProfileForm(forms.ModelForm):
             self.fields["job_title"].initial = profile.job_title
             self.fields["department"].initial = profile.department
             self.fields["phone"].initial = profile.phone
+
+
+class ReportForm(forms.ModelForm):
+    class Meta:
+        from .models import Report
+        model = Report
+        fields = ["title", "status", "severity", "owner", "summary", "note"]
+        widgets = {
+            "title": forms.TextInput(
+                attrs={"class": "input", "placeholder": "Brief incident title"}
+            ),
+            "status": forms.Select(attrs={"class": "input"}),
+            "severity": forms.Select(attrs={"class": "input"}),
+            "owner": forms.TextInput(
+                attrs={"class": "input", "placeholder": "Assigned responder or team"}
+            ),
+            "summary": forms.TextInput(
+                attrs={"class": "input", "placeholder": "One-line operational summary"}
+            ),
+            "note": forms.Textarea(
+                attrs={
+                    "class": "input",
+                    "rows": 4,
+                    "placeholder": "Detailed investigation logs or findings",
+                }
+            ),
+        }
