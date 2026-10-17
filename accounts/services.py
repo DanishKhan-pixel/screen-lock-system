@@ -9,11 +9,41 @@ SESSION_LOCKED = "screen_lock_locked"
 SESSION_RETURN_URL = "screen_lock_return_url"
 SESSION_FAILED_ATTEMPTS = "screen_lock_failed_attempts"
 SESSION_LOCK_TIMESTAMP = "screen_lock_timestamp"
+SESSION_LAST_ACTIVITY = "screen_lock_last_activity"
 
 # Honour the settings override; fall back to 3 if the key is absent.
 MAX_FAILED_ATTEMPTS = getattr(settings, "SCREEN_LOCK_MAX_ATTEMPTS", 3)
 
 INCORRECT_PIN_MESSAGE = "The PIN you entered is incorrect."
+
+
+def record_activity(request):
+    """Update the session with the current UTC timestamp."""
+    request.session[SESSION_LAST_ACTIVITY] = datetime.datetime.now(
+        tz=datetime.timezone.utc
+    ).isoformat()
+
+
+def should_auto_lock(request):
+    """Check if session has timed out due to inactivity and user has a configured PIN."""
+    timeout = getattr(settings, "SCREEN_LOCK_TIMEOUT_SECONDS", None)
+    if not timeout or is_locked(request):
+        return False
+    user = getattr(request, "user", None)
+    if not user or not user.is_authenticated:
+        return False
+    profile = getattr(user, "profile", None)
+    if not profile or not profile.pin_configured:
+        return False
+    raw_ts = request.session.get(SESSION_LAST_ACTIVITY)
+    if not raw_ts:
+        return False
+    try:
+        last_dt = datetime.datetime.fromisoformat(raw_ts)
+    except (TypeError, ValueError):
+        return False
+    now = datetime.datetime.now(tz=datetime.timezone.utc)
+    return (now - last_dt).total_seconds() >= timeout
 
 
 def is_locked(request):

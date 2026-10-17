@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.urls import Resolver404, resolve
 
-from .services import is_locked
+from .services import is_locked, lock_session, record_activity, should_auto_lock
 
 EXEMPT_URL_NAMES = frozenset(
     {
@@ -50,6 +50,12 @@ class ScreenLockMiddleware:
 
     def __call__(self, request):
         user = getattr(request, "user", None)
+        if user is not None and user.is_authenticated:
+            if should_auto_lock(request):
+                lock_session(request, request.path_info)
+            elif not is_locked(request):
+                record_activity(request)
+
         if user is not None and user.is_authenticated and is_locked(request):
             if not _is_exempt(request):
                 if _wants_json(request):
