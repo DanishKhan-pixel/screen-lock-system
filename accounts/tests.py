@@ -469,3 +469,35 @@ class UserProfilePropertyTests(ScreenLockTestCase):
         self.user.last_name = "Bob"
         self.user.save()
         self.assertLessEqual(len(self.user.profile.avatar_initials), 2)
+
+
+class ClearPinViewTests(ScreenLockTestCase):
+    """Tests for the clear_pin view endpoint and model integration."""
+
+    def test_unauthenticated_clear_pin_redirects_to_login(self):
+        self.client.logout()
+        response = self.client.post(reverse("accounts:clear_pin"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("accounts:login"), response.url)
+
+    def test_get_method_not_allowed(self):
+        response = self.client.get(reverse("accounts:clear_pin"))
+        self.assertEqual(response.status_code, 405)
+
+    def test_post_clears_pin_and_redirects_to_settings(self):
+        self.assertTrue(self.user.profile.pin_configured)
+        response = self.client.post(reverse("accounts:clear_pin"))
+        self.assertRedirects(response, reverse("pages:settings"))
+
+        self.user.profile.refresh_from_db()
+        self.assertFalse(self.user.profile.pin_configured)
+        self.assertEqual(self.user.profile.pin_hash, "")
+
+    def test_model_clear_pin_directly(self):
+        profile = self.user.profile
+        self.assertTrue(profile.pin_configured)
+        profile.clear_pin()
+        profile.save()
+        profile.refresh_from_db()
+        self.assertFalse(profile.pin_configured)
+        self.assertEqual(profile.pin_hash, "")
