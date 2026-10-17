@@ -15,5 +15,6 @@ urlpatterns = [
     path("settings/", views.settings_page, name="settings"),
     path("api/status/", views.api_status, name="api_status"),
     path("api/reports/", views.api_reports, name="api_reports"),
+    path("api/reports/<int:pk>/", views.api_report_detail, name="api_report_detail"),
     path("api/me/", views.api_me, name="api_me"),
 ]

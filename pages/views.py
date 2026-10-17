@@ -154,6 +154,25 @@ def api_reports(request):
 
 
 @login_required
+def api_report_detail(request, pk):
+    """Return full JSON details for a single incident report."""
+    report = get_object_or_404(Report, pk=pk)
+    return JsonResponse(
+        {
+            "id": report.pk,
+            "title": report.title,
+            "status": report.status,
+            "severity": report.severity,
+            "owner": report.owner,
+            "summary": report.summary,
+            "note": report.note,
+            "created_at": report.created_at.isoformat() if report.created_at else None,
+            "updated_at": report.updated_at.isoformat() if report.updated_at else None,
+        }
+    )
+
+
+@login_required
 def api_me(request):
     """Return JSON profile data for the currently authenticated user."""
     user = request.user
