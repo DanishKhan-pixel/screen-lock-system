@@ -9,4 +9,5 @@ urlpatterns = [
     path("accounts/logout/", views.AppLogoutView.as_view(), name="logout"),
     path("lock/", views.lock_screen, name="lock_screen"),
     path("lock/activate/", views.activate_lock, name="activate_lock"),
+    path("lock/clear-pin/", views.clear_pin, name="clear_pin"),
 ]

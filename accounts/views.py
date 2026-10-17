@@ -60,3 +60,15 @@ def lock_screen(request):
         form.add_error("pin", INCORRECT_PIN_MESSAGE)
 
     return render(request, "accounts/lock.html", {"form": form})
+
+
+@login_required
+@require_POST
+def clear_pin(request):
+    """Remove screen lock PIN for current user."""
+    profile = getattr(request.user, "profile", None)
+    if profile:
+        profile.clear_pin()
+        profile.save(update_fields=["pin_hash"])
+    messages.success(request, "Screen lock PIN has been removed.")
+    return redirect("pages:settings")
