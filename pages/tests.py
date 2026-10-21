@@ -471,3 +471,54 @@ class DeleteReportTests(TestCase):
         url = reverse("pages:delete_report", args=[99999])
         response = self.client.post(url)
         self.assertEqual(response.status_code, 404)
+
+
+class ExportReportsCsvTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="karl", password="pass1234")
+        self.r1 = Report.objects.create(
+            title="DDoS on edge gateway",
+            status=Report.STATUS_ACTIVE,
+            severity="critical",
+            owner="Karl",
+            summary="Traffic spike mitigated",
+        )
+        self.r2 = Report.objects.create(
+            title="Outdated dependency audit",
+            status=Report.STATUS_CLOSED,
+            severity="low",
+            owner="Karl",
+            summary="Audit complete",
+        )
+        self.client.login(username="karl", password="pass1234")
+
+    def test_export_csv_requires_login(self):
+        self.client.logout()
+        response = self.client.get(reverse("pages:export_reports_csv"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("accounts:login"), response.url)
+
+    def test_export_csv_content_type_and_disposition(self):
+        response = self.client.get(reverse("pages:export_reports_csv"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+        self.assertIn("incident_reports.csv", response["Content-Disposition"])
+
+    def test_export_csv_contains_all_rows(self):
+        response = self.client.get(reverse("pages:export_reports_csv"))
+        content = response.content.decode("utf-8")
+        self.assertIn("ID,Title,Status,Severity,Owner,Summary,Created At,Updated At", content)
+        self.assertIn("DDoS on edge gateway", content)
+        self.assertIn("Outdated dependency audit", content)
+
+    def test_export_csv_respects_status_filter(self):
+        response = self.client.get(reverse("pages:export_reports_csv"), {"status": "active"})
+        content = response.content.decode("utf-8")
+        self.assertIn("DDoS on edge gateway", content)
+        self.assertNotIn("Outdated dependency audit", content)
+
+    def test_export_csv_respects_severity_filter(self):
+        response = self.client.get(reverse("pages:export_reports_csv"), {"severity": "critical"})
+        content = response.content.decode("utf-8")
+        self.assertIn("DDoS on edge gateway", content)
+        self.assertNotIn("Outdated dependency audit", content)
