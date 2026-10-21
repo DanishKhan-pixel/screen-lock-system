@@ -32,7 +32,7 @@ class ReportForm(forms.ModelForm):
     class Meta:
         from .models import Report
         model = Report
-        fields = ["title", "status", "severity", "owner", "summary", "note"]
+        fields = ["title", "status", "severity", "owner", "summary", "note", "resolution"]
         widgets = {
             "title": forms.TextInput(
                 attrs={"class": "input", "placeholder": "Brief incident title"}
@@ -50,6 +50,13 @@ class ReportForm(forms.ModelForm):
                     "class": "input",
                     "rows": 4,
                     "placeholder": "Detailed investigation logs or findings",
+                }
+            ),
+            "resolution": forms.Textarea(
+                attrs={
+                    "class": "input",
+                    "rows": 3,
+                    "placeholder": "Resolution details, root cause remediation, or mitigation actions",
                 }
             ),
         }

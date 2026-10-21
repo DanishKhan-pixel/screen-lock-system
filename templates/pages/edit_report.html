@@ -52,6 +52,12 @@
             {{ form.note.errors }}
         </p>
 
+        <p>
+            <label for="{{ form.resolution.id_for_label }}">Resolution</label>
+            {{ form.resolution }}
+            {{ form.resolution.errors }}
+        </p>
+
         <div style="display: flex; gap: 0.75rem; align-items: center; margin-top: 1.25rem;">
             <button type="submit">Save Changes</button>
             <a class="btn-secondary" href="{{ report.get_absolute_url }}">Cancel</a>
