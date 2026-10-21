@@ -8,6 +8,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- `edit_report` view, URL route (`reports/<pk>/edit/`), and `edit_report.html` template.
+- `delete_report` view, URL route (`reports/<pk>/delete/`), and confirmation dialog in detail view.
+- `resolution` TextField on `Report` model (migration `0004_report_resolution`) for incident root cause and mitigation notes.
+- Resolution field included in `ReportForm`, creation template, edit template, and detail view.
+- `resolution` field included in `api/reports/<pk>/` JSON payload.
+- `export_reports_csv` view and route (`reports/export/csv/`) with filter preservation and CSV download.
+- "Export CSV" button in reports overview hero action bar.
+- Test suites for report editing, report deletion, resolution field persistence, and CSV export (120 tests passing).
 - `clear_pin` view, URL route (`accounts/lock/clear-pin/`), and UI action in Security settings for removing screen lock PIN.
 - `api/reports/<pk>/` JSON detail endpoint returning full report metadata with 404 handling.
 - `ReportForm` and `create_report` view, URL route (`reports/create/`), and responsive creation template.
