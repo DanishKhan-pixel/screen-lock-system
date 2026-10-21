@@ -94,6 +94,21 @@ def create_report(request):
 
 
 @login_required
+def edit_report(request, pk):
+    """Edit an existing incident report."""
+    report = get_object_or_404(Report, pk=pk)
+    if request.method == "POST":
+        form = ReportForm(request.POST, instance=report)
+        if form.is_valid():
+            report = form.save()
+            messages.success(request, f"Incident '{report.title}' updated.")
+            return redirect(report.get_absolute_url())
+    else:
+        form = ReportForm(instance=report)
+    return render(request, "pages/edit_report.html", {"form": form, "report": report})
+
+
+@login_required
 def users(request):
     query = request.GET.get("q", "").strip()
     qs = User.objects.select_related("profile").order_by("username")
