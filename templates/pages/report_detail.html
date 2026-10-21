@@ -33,9 +33,13 @@
         {% endif %}
     </dl>
 
-    <div style="display: flex; gap: 0.75rem; align-items: center; margin-top: 1.5rem;">
+    <div style="display: flex; gap: 0.75rem; align-items: center; margin-top: 1.5rem; flex-wrap: wrap;">
         <a class="btn-secondary" href="{% url 'pages:reports' %}">← Back to Incidents</a>
         <a class="btn" href="{% url 'pages:edit_report' report.pk %}">Edit Incident</a>
+        <form method="post" action="{% url 'pages:delete_report' report.pk %}" onsubmit="return confirm('Permanently delete this incident report?');" style="margin: 0;">
+            {% csrf_token %}
+            <button type="submit" class="btn-secondary" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">Delete Incident</button>
+        </form>
     </div>
 </div>
 {% endblock %}
