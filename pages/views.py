@@ -1,9 +1,11 @@
+import csv
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -70,6 +72,44 @@ def reports(request):
             "severities": Report.SEVERITY_CHOICES,
         },
     )
+
+
+@login_required
+def export_reports_csv(request):
+    """Export incident reports to a CSV spreadsheet."""
+    status = request.GET.get("status", "")
+    severity = request.GET.get("severity", "")
+    query = request.GET.get("q", "").strip()
+
+    qs = Report.objects.all().order_by("-created_at")
+    if status in dict(Report.STATUS_CHOICES):
+        qs = qs.filter(status=status)
+    if severity in dict(Report.SEVERITY_CHOICES):
+        qs = qs.filter(severity=severity)
+    if query:
+        qs = qs.filter(Q(title__icontains=query) | Q(owner__icontains=query))
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="incident_reports.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(
+        ["ID", "Title", "Status", "Severity", "Owner", "Summary", "Created At", "Updated At"]
+    )
+    for r in qs:
+        writer.writerow(
+            [
+                r.id,
+                r.title,
+                r.get_status_display(),
+                r.get_severity_display(),
+                r.owner,
+                r.summary,
+                r.created_at.strftime("%Y-%m-%d %H:%M:%S") if r.created_at else "",
+                r.updated_at.strftime("%Y-%m-%d %H:%M:%S") if r.updated_at else "",
+            ]
+        )
+    return response
 
 
 @login_required
