@@ -109,6 +109,17 @@ def edit_report(request, pk):
 
 
 @login_required
+@require_POST
+def delete_report(request, pk):
+    """Delete an existing incident report."""
+    report = get_object_or_404(Report, pk=pk)
+    title = report.title
+    report.delete()
+    messages.success(request, f"Incident '{title}' has been deleted.")
+    return redirect("pages:reports")
+
+
+@login_required
 def users(request):
     query = request.GET.get("q", "").strip()
     qs = User.objects.select_related("profile").order_by("username")
