@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Edit Incident › {{ report.title }}{% endblock %}
+{% block crumb %}Incidents / <a href="{{ report.get_absolute_url }}">{{ report.title }}</a> / <strong>Edit</strong>{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div>
+        <h1>Edit Incident</h1>
+        <p>Modify incident report details, status, severity, and investigation findings.</p>
+    </div>
+</div>
+
+<section class="card" style="max-width: 720px;">
+    <form method="post" autocomplete="off">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <p>
+            <label for="{{ form.title.id_for_label }}">Incident Title</label>
+            {{ form.title }}
+            {{ form.title.errors }}
+        </p>
+
+        <div class="grid two" style="gap: 1rem;">
+            <p>
+                <label for="{{ form.status.id_for_label }}">Status</label>
+                {{ form.status }}
+                {{ form.status.errors }}
+            </p>
+            <p>
+                <label for="{{ form.severity.id_for_label }}">Severity</label>
+                {{ form.severity }}
+                {{ form.severity.errors }}
+            </p>
+        </div>
+
+        <p>
+            <label for="{{ form.owner.id_for_label }}">Assignee / Owner</label>
+            {{ form.owner }}
+            {{ form.owner.errors }}
+        </p>
+
+        <p>
+            <label for="{{ form.summary.id_for_label }}">Executive Summary</label>
+            {{ form.summary }}
+            {{ form.summary.errors }}
+        </p>
+
+        <p>
+            <label for="{{ form.note.id_for_label }}">Investigation Notes</label>
+            {{ form.note }}
+            {{ form.note.errors }}
+        </p>
+
+        <div style="display: flex; gap: 0.75rem; align-items: center; margin-top: 1.25rem;">
+            <button type="submit">Save Changes</button>
+            <a class="btn-secondary" href="{{ report.get_absolute_url }}">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}
