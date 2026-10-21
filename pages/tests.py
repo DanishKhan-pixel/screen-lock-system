@@ -145,6 +145,7 @@ class ApiReportDetailTests(TestCase):
             owner="Clara",
             summary="Unfiltered port 443 inbound",
             note="Reviewed iptables and resolved rule conflict.",
+            resolution="Updated firewall rule to drop public packets.",
         )
         self.client.login(username="clara", password="pass1234")
 
@@ -166,8 +167,26 @@ class ApiReportDetailTests(TestCase):
         self.assertEqual(data["owner"], "Clara")
         self.assertEqual(data["summary"], "Unfiltered port 443 inbound")
         self.assertEqual(data["note"], "Reviewed iptables and resolved rule conflict.")
+        self.assertEqual(data["resolution"], "Updated firewall rule to drop public packets.")
         self.assertIsNotNone(data["created_at"])
         self.assertIsNotNone(data["updated_at"])
+
+    def test_report_form_persists_resolution(self):
+        from pages.forms import ReportForm
+        form = ReportForm(
+            data={
+                "title": "Patch applied",
+                "status": Report.STATUS_CLOSED,
+                "severity": "medium",
+                "owner": "Clara",
+                "summary": "CVE remediated",
+                "note": "Root cause analyzed.",
+                "resolution": "Applied security patch v2.1.",
+            }
+        )
+        self.assertTrue(form.is_valid())
+        saved = form.save()
+        self.assertEqual(saved.resolution, "Applied security patch v2.1.")
 
     def test_api_report_detail_404_for_missing(self):
         url = reverse("pages:api_report_detail", args=[99999])
