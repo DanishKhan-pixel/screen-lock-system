@@ -206,6 +206,7 @@ def api_report_detail(request, pk):
             "owner": report.owner,
             "summary": report.summary,
             "note": report.note,
+            "resolution": report.resolution,
             "created_at": report.created_at.isoformat() if report.created_at else None,
             "updated_at": report.updated_at.isoformat() if report.updated_at else None,
         }
