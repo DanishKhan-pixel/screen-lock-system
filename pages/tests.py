@@ -417,3 +417,38 @@ class EditReportTests(TestCase):
         url = reverse("pages:edit_report", args=[99999])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
+
+
+class DeleteReportTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="julia", password="pass1234")
+        self.report = Report.objects.create(
+            title="Temporary Incident",
+            status=Report.STATUS_ACTIVE,
+            severity="low",
+            owner="Julia",
+        )
+        self.client.login(username="julia", password="pass1234")
+
+    def test_delete_report_requires_login(self):
+        self.client.logout()
+        url = reverse("pages:delete_report", args=[self.report.pk])
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("accounts:login"), response.url)
+
+    def test_delete_report_get_not_allowed(self):
+        url = reverse("pages:delete_report", args=[self.report.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 405)
+
+    def test_delete_report_post_deletes_and_redirects(self):
+        url = reverse("pages:delete_report", args=[self.report.pk])
+        response = self.client.post(url)
+        self.assertRedirects(response, reverse("pages:reports"))
+        self.assertFalse(Report.objects.filter(pk=self.report.pk).exists())
+
+    def test_delete_report_404_for_missing(self):
+        url = reverse("pages:delete_report", args=[99999])
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 404)
