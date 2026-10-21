@@ -27,6 +27,10 @@ class Report(models.Model):
         blank=True,
         help_text="Detailed investigation notes. Supports plain text.",
     )
+    resolution = models.TextField(
+        blank=True,
+        help_text="Action taken to resolve or mitigate the incident.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
