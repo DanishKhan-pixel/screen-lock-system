@@ -8,7 +8,8 @@
         <h1>Reports</h1>
         <p>Filter status: <strong>{{ status|default:"(none)" }}</strong> · Page: <strong>{{ page|default:"(none)" }}</strong></p>
     </div>
-    <div style="display: flex; gap: 0.5rem; align-items: center;">
+    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+        <a class="btn-secondary" href="{% url 'pages:export_reports_csv' %}{% if status or severity or query %}?{% endif %}{% if status %}status={{ status }}&amp;{% endif %}{% if severity %}severity={{ severity }}&amp;{% endif %}{% if query %}q={{ query }}{% endif %}">Export CSV</a>
         <a class="btn-secondary" href="{% url 'pages:reports' %}?status=active">View active</a>
         <a class="btn" href="{% url 'pages:create_report' %}">+ New Incident</a>
     </div>
