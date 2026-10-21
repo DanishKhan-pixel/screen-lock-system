@@ -363,3 +363,57 @@ class ReportFilterTests(TestCase):
         self.assertEqual(response.status_code, 200)
         reports = list(response.context["page_obj"])
         self.assertEqual(len(reports), 3)
+
+
+class EditReportTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="ian", password="pass1234")
+        self.report = Report.objects.create(
+            title="Initial Title",
+            status=Report.STATUS_ACTIVE,
+            severity="medium",
+            owner="Ian",
+            summary="Original summary",
+            note="Original note",
+        )
+        self.client.login(username="ian", password="pass1234")
+
+    def test_edit_report_requires_login(self):
+        self.client.logout()
+        url = reverse("pages:edit_report", args=[self.report.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("accounts:login"), response.url)
+
+    def test_edit_report_get_renders_form(self):
+        url = reverse("pages:edit_report", args=[self.report.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Initial Title")
+        self.assertContains(response, "Original summary")
+
+    def test_edit_report_post_updates_and_redirects(self):
+        url = reverse("pages:edit_report", args=[self.report.pk])
+        data = {
+            "title": "Updated Title",
+            "status": Report.STATUS_CLOSED,
+            "severity": "critical",
+            "owner": "Ian Lead",
+            "summary": "Updated summary",
+            "note": "Resolved and documented.",
+        }
+        response = self.client.post(url, data)
+        self.assertRedirects(response, self.report.get_absolute_url())
+
+        self.report.refresh_from_db()
+        self.assertEqual(self.report.title, "Updated Title")
+        self.assertEqual(self.report.status, Report.STATUS_CLOSED)
+        self.assertEqual(self.report.severity, "critical")
+        self.assertEqual(self.report.owner, "Ian Lead")
+        self.assertEqual(self.report.summary, "Updated summary")
+        self.assertEqual(self.report.note, "Resolved and documented.")
+
+    def test_edit_report_404_for_missing(self):
+        url = reverse("pages:edit_report", args=[99999])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
